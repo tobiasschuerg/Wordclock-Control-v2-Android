@@ -28,11 +28,10 @@ dependencies {
     compile 'com.jakewharton.rxbinding:rxbinding:0.4.0'
     compile 'com.jakewharton.rxbinding:rxbinding-support-v4:0.4.0'
     compile 'com.jakewharton.rxbinding:rxbinding-appcompat-v7:0.4.0'
-
     // better approach but does not really work ... (yet?)
     // compile "com.polidea.rxandroidble:rxandroidble:1.1.0"
-
     compile 'com.github.ivbaranov:rxbluetooth:0.1.2'
+    compile 'com.github.QuadFlask:colorpicker:0.0.12'
 
 
 

@@ -2,13 +2,20 @@ package com.tobiasschuerg.wordclock;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatButton;
 import android.util.Log;
+import android.view.View;
 import android.widget.ProgressBar;
 
+import com.flask.colorpicker.ColorPickerView;
+import com.flask.colorpicker.builder.ColorPickerClickListener;
+import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.github.ivbaranov.rxbluetooth.RxBluetooth;
 
 import java.util.Random;
@@ -17,14 +24,14 @@ import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
-import rx.subjects.BehaviorSubject;
-import rx.subjects.Subject;
+import rx.subjects.ReplaySubject;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,11 +39,18 @@ public class MainActivity extends AppCompatActivity {
     private static final UUID MY_UUID_SECURE   = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static final UUID MY_UUID_INSECURE = UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
 
-    @BindView(R.id.progress) ProgressBar progressBar;
+    @BindView(R.id.progress)          ProgressBar     progressBar;
+    @BindView(R.id.btn_back_color)    AppCompatButton backgroundColorBtn;
+    @BindView(R.id.btn_primary_color) AppCompatButton primaryColorBtn;
 
     @Nullable private Subscription connectSubscription;
-    private           Subscription timer;
-    private           Subscription stateObservable;
+
+    private Subscription timer;
+    private Subscription stateObservable;
+    private ReplaySubject<ClockValue> updateSubject = ReplaySubject.create();
+
+    private int backgroundColor = Color.BLUE;
+    private int primaryColor    = Color.RED;
 
     // private RxBleClient rxBleClient;
 
@@ -45,15 +59,61 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        progressBar.setVisibility(View.VISIBLE);
         progressBar.setIndeterminate(true);
         connectWordClock();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    @OnClick(R.id.btn_primary_color)
+    void pickPrimaryColor() {
+        ColorPickerDialogBuilder
+                .with(MainActivity.this)
+                .setTitle("Choose color")
+                .initialColor(primaryColor)
+                .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
+                .density(6)
+                .setPositiveButton("ok", new ColorPickerClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
+                        float[] hsv = new float[3];
+                        Color.colorToHSV(selectedColor, hsv);
+                        if (hsv[2] > 0.8) {
+                            hsv[2] = 0.8f;
+                        }
+                        selectedColor = Color.HSVToColor(hsv);
+                        primaryColor = selectedColor;
+                        updateSubject.onNext(new ForegroundColor(selectedColor));
+                        primaryColorBtn.setBackgroundColor(selectedColor);
+                    }
+                })
+                .build()
+                .show();
+    }
 
-
+    @OnClick(R.id.btn_back_color)
+    void pickSecondaryColor() {
+        ColorPickerDialogBuilder
+                .with(MainActivity.this)
+                .setTitle("Secondary Color")
+                .initialColor(backgroundColor)
+                .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
+                .density(6)
+                .setPositiveButton("ok", new ColorPickerClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
+                        float[] hsv = new float[3];
+                        Color.colorToHSV(selectedColor, hsv);
+                        if (hsv[2] > 0.7) {
+                            hsv[2] = 0.7f;
+                        }
+                        selectedColor = Color.HSVToColor(hsv);
+                        backgroundColor = selectedColor;
+                        updateSubject.onNext(new BackgroundColor(selectedColor));
+                        backgroundColorBtn.setBackgroundColor(backgroundColor);
+                    }
+                })
+                .build()
+                .show();
     }
 
     private void connectWordClock() {
@@ -85,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void call(BtCommander commander) {
                             setMessage("Connected to " + commander.getName());
+                            progressBar.setVisibility(View.GONE);
                             onConnected(commander);
                         }
                     }, new Action1<Throwable>() {
@@ -109,9 +170,7 @@ public class MainActivity extends AppCompatActivity {
 
         final Random r = new Random();
 
-        Subject<ClockValue, ClockValue> s = BehaviorSubject.create();
-
-        timer = s.subscribe(new Subscriber<ClockValue>() {
+        timer = updateSubject.subscribe(new Subscriber<ClockValue>() {
             @Override
             public void onCompleted() {
                 log("completed");
