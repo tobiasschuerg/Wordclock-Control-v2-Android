@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.github.ivbaranov.rxbluetooth.BluetoothConnection;
+import com.tobiasschuerg.wordclock.values.ClockValue;
 
 import java.io.IOException;
 import java.util.Calendar;

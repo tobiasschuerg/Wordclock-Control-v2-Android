@@ -1,4 +1,4 @@
-package com.tobiasschuerg.wordclock;
+package com.tobiasschuerg.wordclock.values;
 
 import android.graphics.Color;
 import android.support.annotation.ColorInt;
@@ -7,17 +7,17 @@ import android.support.annotation.ColorInt;
  * Created by Tobias Schürg on 27.11.2016.
  */
 
-public class BackgroundColor implements ClockValue {
+public class ForegroundColor implements ClockValue {
 
     private final int color;
 
-    public BackgroundColor(@ColorInt int color) {
+    public ForegroundColor(@ColorInt int color) {
         this.color = color;
     }
 
     @Override
     public byte[] toByte() {
-        byte[] out = {'B', 0, 0, 0};
+        byte[] out = {'F', 0, 0, 0};
         out[1] = (byte) Color.red(color);
         out[2] = (byte) Color.green(color);
         out[3] = (byte) Color.blue(color);

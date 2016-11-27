@@ -11,12 +11,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ProgressBar;
 
 import com.flask.colorpicker.ColorPickerView;
 import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.github.ivbaranov.rxbluetooth.RxBluetooth;
+import com.tobiasschuerg.wordclock.values.BackgroundColor;
+import com.tobiasschuerg.wordclock.values.ClockValue;
+import com.tobiasschuerg.wordclock.values.Effect;
+import com.tobiasschuerg.wordclock.values.ForegroundColor;
 
 import java.util.Random;
 import java.util.Set;
@@ -24,6 +29,7 @@ import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
 import rx.Subscriber;
 import rx.Subscription;
@@ -42,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.progress)          ProgressBar     progressBar;
     @BindView(R.id.btn_back_color)    AppCompatButton backgroundColorBtn;
     @BindView(R.id.btn_primary_color) AppCompatButton primaryColorBtn;
+    @BindView(R.id.es_ist)            CheckBox        checkBox;
 
     @Nullable private Subscription connectSubscription;
 
@@ -62,6 +69,11 @@ public class MainActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         progressBar.setIndeterminate(true);
         connectWordClock();
+    }
+
+    @OnCheckedChanged(R.id.es_ist)
+    void esIst(boolean checked) {
+        updateSubject.onNext(new Effect(checked));
     }
 
     @OnClick(R.id.btn_primary_color)
