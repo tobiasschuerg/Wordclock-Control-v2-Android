@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.graphics.drawable.AnimatedVectorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.flask.colorpicker.ColorPickerView;
 import com.flask.colorpicker.builder.ColorPickerClickListener;
@@ -129,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void connectWordClock() {
-        log("going to connect with word clock");
+        log("going to connect with a word clock");
         RxBluetooth rxb = new RxBluetooth(getApplicationContext());
         if (!rxb.isBluetoothAvailable()) {
             log("no bluetooth");
@@ -139,14 +141,26 @@ public class MainActivity extends AppCompatActivity {
             rxb.cancelDiscovery();
 
             Set<BluetoothDevice> devices = rxb.getBondedDevices();
-            // TODO: ask user for device
-            final BluetoothDevice device = devices.iterator().next();
-            log("Going to connect to " + device);
+            BluetoothDevice device = null;
+            // TODO: ask user for a specific device
+            for (BluetoothDevice btd : devices) {
+                log("bluetooth device found: " + btd.getName());
+                if (btd.getName().toLowerCase().contains("wordclock")) {
+                    device = btd;
+                }
+            }
+            if (device == null) {
+                Toast.makeText(this, "No word clock bluetooth signal found!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Toast.makeText(this, "Connecting to " + device.getName(), Toast.LENGTH_SHORT).show();
+            log("Going to connect to " + device.getAddress() + " - " + device.getName());
 
-            connectSubscription = rxb.observeConnectDevice(device, MY_UUID_SECURE)
+            connectSubscription = rxb
+                    .observeConnectDevice(device, MY_UUID_SECURE)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
-                    .first().toSingle()
+                    .retry(3)
                     .map(new Func1<BluetoothSocket, BtCommander>() {
                         @Override
                         public BtCommander call(BluetoothSocket bluetoothSocket) {
@@ -163,9 +177,12 @@ public class MainActivity extends AppCompatActivity {
                     }, new Action1<Throwable>() {
                         @Override
                         public void call(Throwable throwable) {
-                            log("ERROR connecting");
+                            log("Could not connect to word clock");
                             setMessage(throwable.getMessage());
                             throwable.printStackTrace();
+                            log("stopping");
+                            AnimatedVectorDrawable rotateDrawable = (AnimatedVectorDrawable) progressBar.getIndeterminateDrawable();
+                            rotateDrawable.stop();
                         }
                     });
         }
