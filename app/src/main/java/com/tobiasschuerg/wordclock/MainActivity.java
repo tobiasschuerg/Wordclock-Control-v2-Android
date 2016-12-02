@@ -116,6 +116,12 @@ public class MainActivity extends AppCompatActivity {
                     .observeConnectDevice(device, Config.MY_UUID_SECURE)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
+                    .doOnError(new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            Toast.makeText(MainActivity.this, "Connecting failed. Will Retry.", Toast.LENGTH_SHORT).show();
+                        }
+                    })
                     .retry(3)
                     .map(new Func1<BluetoothSocket, BtCommander>() {
                         @Override
@@ -194,9 +200,10 @@ public class MainActivity extends AppCompatActivity {
                 .with(MainActivity.this)
                 .setTitle("Choose color")
                 .initialColor(primaryColor)
+                .showAlphaSlider(false)
                 .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
-                .density(6)
-                .setPositiveButton("ok", new ColorPickerClickListener() {
+                .density(7)
+                .setPositiveButton(android.R.string.ok, new ColorPickerClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
                         float[] hsv = new float[3];
@@ -220,9 +227,10 @@ public class MainActivity extends AppCompatActivity {
                 .with(MainActivity.this)
                 .setTitle("Secondary Color")
                 .initialColor(backgroundColor)
+                .showAlphaSlider(false)
                 .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
-                .density(6)
-                .setPositiveButton("ok", new ColorPickerClickListener() {
+                .density(7)
+                .setPositiveButton(android.R.string.ok, new ColorPickerClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
                         float[] hsv = new float[3];
