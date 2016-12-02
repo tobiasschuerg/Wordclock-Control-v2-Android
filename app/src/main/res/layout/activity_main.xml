@@ -24,21 +24,29 @@
             android:id="@+id/btn_primary_color"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
+            android:layout_margin="32dp"
             android:text="Primary color"/>
 
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/btn_back_color"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
+            android:layout_margin="32dp"
             android:text="Secondary color"/>
 
         <CheckBox
             android:id="@+id/es_ist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="32dp"
             android:text="ES IST"/>
+
+        <Button
+            android:id="@+id/effect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="32dp"
+            android:text="Effect"/>
 
     </LinearLayout>
 

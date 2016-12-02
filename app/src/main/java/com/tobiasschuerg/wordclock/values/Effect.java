@@ -6,15 +6,17 @@ package com.tobiasschuerg.wordclock.values;
 
 public class Effect implements ClockValue {
 
-    private final boolean enabled;
+    private final boolean esIstEnabled;
+    private final int     effect;
 
-    public Effect(boolean enabled) {
-        this.enabled = enabled;
+    public Effect(int effect, boolean esIstEnabled) {
+        this.esIstEnabled = esIstEnabled;
+        this.effect = effect;
     }
 
     @Override
     public byte[] toByte() {
-        final byte esIst = (byte) (enabled ? 1 : 0);
-        return new byte[]{'E', 0, esIst,  0};
+        final byte esIst = (byte) (esIstEnabled ? 1 : 0);
+        return new byte[]{'E', (byte) effect, esIst, 0};
     }
 }

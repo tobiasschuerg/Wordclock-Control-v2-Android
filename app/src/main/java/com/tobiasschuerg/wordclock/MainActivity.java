@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -27,7 +28,6 @@ import com.tobiasschuerg.wordclock.values.ForegroundColor;
 
 import java.util.Random;
 import java.util.Set;
-import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -43,23 +43,21 @@ import rx.subjects.ReplaySubject;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Unique UUID for this application
-    private static final UUID MY_UUID_SECURE   = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    private static final UUID MY_UUID_INSECURE = UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
-
     @BindView(R.id.progress)          ProgressBar     progressBar;
     @BindView(R.id.btn_back_color)    AppCompatButton backgroundColorBtn;
     @BindView(R.id.btn_primary_color) AppCompatButton primaryColorBtn;
     @BindView(R.id.es_ist)            CheckBox        checkBox;
+    @BindView(R.id.effect)            Button          effectBtn;
 
     @Nullable private Subscription connectSubscription;
 
-    private Subscription timer;
+    private Subscription updateSubscription;
     private Subscription stateObservable;
     private ReplaySubject<ClockValue> updateSubject = ReplaySubject.create();
 
     private int backgroundColor = Color.BLUE;
     private int primaryColor    = Color.RED;
+    private int effect          = 0;
 
     // private RxBleClient rxBleClient;
 
@@ -73,9 +71,121 @@ public class MainActivity extends AppCompatActivity {
         connectWordClock();
     }
 
+    @Override
+    protected void onStop() {
+        if (connectSubscription != null) {
+            connectSubscription.unsubscribe();
+        }
+        if (updateSubscription != null) {
+            updateSubscription.unsubscribe();
+        }
+        if (stateObservable != null) {
+            stateObservable.unsubscribe();
+        }
+        super.onStop();
+
+    }
+
+    private void connectWordClock() {
+        log("going to connect with a word clock");
+        RxBluetooth rxb = new RxBluetooth(getApplicationContext());
+        if (!rxb.isBluetoothAvailable()) {
+            log("no bluetooth");
+            // to enable bluetooth via startActivityForResult()
+            rxb.enableBluetooth(this, 0);
+        } else {
+            rxb.cancelDiscovery();
+
+            Set<BluetoothDevice> devices = rxb.getBondedDevices();
+            BluetoothDevice device = null;
+            // TODO: ask user for a specific device
+            for (BluetoothDevice btd : devices) {
+                log("bluetooth device found: " + btd.getName());
+                if (btd.getName().toLowerCase().contains("wordclock")) {
+                    device = btd;
+                }
+            }
+            if (device == null) {
+                Toast.makeText(this, "No word clock bluetooth signal found!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Toast.makeText(this, "Connecting to " + device.getName(), Toast.LENGTH_SHORT).show();
+            log("Going to connect to " + device.getAddress() + " - " + device.getName());
+
+            connectSubscription = rxb
+                    .observeConnectDevice(device, Config.MY_UUID_SECURE)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.io())
+                    .retry(3)
+                    .map(new Func1<BluetoothSocket, BtCommander>() {
+                        @Override
+                        public BtCommander call(BluetoothSocket bluetoothSocket) {
+                            return new BtCommander(bluetoothSocket);
+                        }
+                    })
+                    .subscribe(new Action1<BtCommander>() {
+                        @Override
+                        public void call(BtCommander commander) {
+                            setMessage("Connected to " + commander.getName());
+                            progressBar.setVisibility(View.GONE);
+                            onConnected(commander);
+                        }
+                    }, new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            log("Could not connect to word clock");
+                            setMessage(throwable.getMessage());
+                            throwable.printStackTrace();
+                            log("stopping");
+                            AnimatedVectorDrawable rotateDrawable = (AnimatedVectorDrawable) progressBar.getIndeterminateDrawable();
+                            rotateDrawable.stop();
+                        }
+                    });
+        }
+    }
+
+    private void log(String message) {
+        Log.d("Main", message);
+    }
+
+    private void setMessage(String message) {
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setSubtitle(message);
+    }
+
+    private void onConnected(final BtCommander btc) {
+        log("connected");
+        btc.updateTime();
+
+        final Random r = new Random();
+
+        updateSubscription = updateSubject
+                .observeOn(Schedulers.io())
+                .subscribe(new Subscriber<ClockValue>() {
+                    @Override
+                    public void onCompleted() {
+                        log("completed");
+                        btc.close();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        log("ERROR");
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onNext(ClockValue clockValue) {
+                        log("update " + clockValue.toString());
+                        btc.set(clockValue);
+                    }
+                });
+
+    }
+
     @OnCheckedChanged(R.id.es_ist)
     void esIst(boolean checked) {
-        updateSubject.onNext(new Effect(checked));
+        updateSubject.onNext(new Effect(effect, checked));
     }
 
     @OnClick(R.id.btn_primary_color)
@@ -130,112 +240,6 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void connectWordClock() {
-        log("going to connect with a word clock");
-        RxBluetooth rxb = new RxBluetooth(getApplicationContext());
-        if (!rxb.isBluetoothAvailable()) {
-            log("no bluetooth");
-            // to enable bluetooth via startActivityForResult()
-            rxb.enableBluetooth(this, 0);
-        } else {
-            rxb.cancelDiscovery();
-
-            Set<BluetoothDevice> devices = rxb.getBondedDevices();
-            BluetoothDevice device = null;
-            // TODO: ask user for a specific device
-            for (BluetoothDevice btd : devices) {
-                log("bluetooth device found: " + btd.getName());
-                if (btd.getName().toLowerCase().contains("wordclock")) {
-                    device = btd;
-                }
-            }
-            if (device == null) {
-                Toast.makeText(this, "No word clock bluetooth signal found!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            Toast.makeText(this, "Connecting to " + device.getName(), Toast.LENGTH_SHORT).show();
-            log("Going to connect to " + device.getAddress() + " - " + device.getName());
-
-            connectSubscription = rxb
-                    .observeConnectDevice(device, MY_UUID_SECURE)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeOn(Schedulers.io())
-                    .retry(3)
-                    .map(new Func1<BluetoothSocket, BtCommander>() {
-                        @Override
-                        public BtCommander call(BluetoothSocket bluetoothSocket) {
-                            return new BtCommander(bluetoothSocket);
-                        }
-                    })
-                    .subscribe(new Action1<BtCommander>() {
-                        @Override
-                        public void call(BtCommander commander) {
-                            setMessage("Connected to " + commander.getName());
-                            progressBar.setVisibility(View.GONE);
-                            onConnected(commander);
-                        }
-                    }, new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable throwable) {
-                            log("Could not connect to word clock");
-                            setMessage(throwable.getMessage());
-                            throwable.printStackTrace();
-                            log("stopping");
-                            AnimatedVectorDrawable rotateDrawable = (AnimatedVectorDrawable) progressBar.getIndeterminateDrawable();
-                            rotateDrawable.stop();
-                        }
-                    });
-        }
-    }
-
-    private void setMessage(String message) {
-        ActionBar actionbar = getSupportActionBar();
-        actionbar.setSubtitle(message);
-    }
-
-    private void onConnected(final BtCommander btc) {
-        log("connected");
-        btc.updateTime();
-
-        final Random r = new Random();
-
-        timer = updateSubject.subscribe(new Subscriber<ClockValue>() {
-            @Override
-            public void onCompleted() {
-                log("completed");
-                btc.close();
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                log("ERROR");
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onNext(ClockValue clockValue) {
-                log("update " + clockValue.toString());
-                btc.set(clockValue);
-            }
-        });
-
-    }
-
-    @Override
-    protected void onStop() {
-        if (connectSubscription != null) {
-            connectSubscription.unsubscribe();
-        }
-        if (timer != null) {
-            timer.unsubscribe();
-        }
-        if (stateObservable != null) {
-            stateObservable.unsubscribe();
-        }
-        super.onStop();
-
-    }
-
 
     //    private void connectTo(final RxBleDevice device) {
     //
@@ -288,8 +292,12 @@ public class MainActivity extends AppCompatActivity {
     //                });
     //    }
 
-    private void log(String message) {
-        Log.d("Main", message);
+    @OnClick(R.id.effect)
+    void toggleEffect() {
+        effect++;
+        effect = effect % Config.NUMBER_OF_EFFECTS;
+        effectBtn.setText("Effect " + effect);
+        updateSubject.onNext(new Effect(effect, checkBox.isChecked()));
     }
 
 }
