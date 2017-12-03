@@ -1,8 +1,9 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.0"
     defaultConfig {
         applicationId "com.tobiasschuerg.wordclock"
         minSdkVersion 23
@@ -33,7 +34,7 @@ dependencies {
     compile 'com.github.ivbaranov:rxbluetooth:0.1.2'
     compile 'com.github.QuadFlask:colorpicker:0.0.12'
 
-
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.3-alpha', {
         exclude group: 'com.android.support', module: 'support-annotations'
