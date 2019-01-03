@@ -2,7 +2,7 @@ package com.tobiasschuerg.wordclock
 
 import android.bluetooth.BluetoothSocket
 import android.graphics.Color
-import android.support.annotation.ColorInt
+import androidx.annotation.ColorInt
 import android.util.Log
 import com.github.ivbaranov.rxbluetooth.BluetoothConnection
 import com.tobiasschuerg.wordclock.values.ClockValue

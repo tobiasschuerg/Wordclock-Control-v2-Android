@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothDevice
 import android.graphics.Color
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -143,7 +143,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    internal fun pickPrimaryColor() {
+    private fun pickPrimaryColor() {
         ColorPickerDialogBuilder
                 .with(this@MainActivity)
                 .setTitle("Choose color")
@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity() {
                 .showAlphaSlider(false)
                 .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
                 .density(7)
-                .setPositiveButton(android.R.string.ok) { dialog, color, allColors ->
+                .setPositiveButton(android.R.string.ok) { _, color, _ ->
                     var selectedColor = color
                     val hsv = FloatArray(3)
                     Color.colorToHSV(selectedColor, hsv)
@@ -175,7 +175,7 @@ class MainActivity : AppCompatActivity() {
                 .showAlphaSlider(false)
                 .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
                 .density(7)
-                .setPositiveButton(android.R.string.ok) { dialog, color, allColors ->
+                .setPositiveButton(android.R.string.ok) { _, color, _ ->
                     var selectedColor = color
                     val hsv = FloatArray(3)
                     Color.colorToHSV(selectedColor, hsv)

@@ -1,7 +1,7 @@
 package com.tobiasschuerg.wordclock.values
 
 import android.graphics.Color
-import android.support.annotation.ColorInt
+import androidx.annotation.ColorInt
 
 /**
  * Created by Tobias Schürg on 27.11.2016.
