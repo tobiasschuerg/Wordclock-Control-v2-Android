@@ -9,3 +9,6 @@
 .externalNativeBuild
 .idea/inspectionProfiles/Project_Default.xml
 .idea/misc.xml
+.idea/runConfigurations.xml
+.idea/modules.xml
+.idea/vcs.xml
