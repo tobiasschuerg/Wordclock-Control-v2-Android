@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Word Clock Control</string>
+    <string name="primary_color">Primary color</string>
+    <string name="secondary_color">Secondary color</string>
+    <string name="show_it_is">Show \'it is\'</string>
+    <string name="effect">Effect</string>
 </resources>

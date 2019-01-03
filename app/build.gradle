@@ -9,8 +9,8 @@ android {
         applicationId "com.tobiasschuerg.wordclock"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1.0"
         multiDexEnabled true
     }
     buildTypes {
@@ -31,7 +31,8 @@ dependencies {
     // compile "com.polidea.rxandroidble:rxandroidble:1.1.0"
     implementation 'com.github.ivbaranov:rxbluetooth:0.1.2'
 
-    implementation 'com.github.QuadFlask:colorpicker:0.0.13'
+    implementation 'com.github.tobiasschuerg:colorpicker:0.1.0'
+    // implementation 'com.github.QuadFlask:colorpicker:0.0.13'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
