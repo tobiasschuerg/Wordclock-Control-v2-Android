@@ -22,7 +22,7 @@ import rx.schedulers.Schedulers
 import rx.subjects.ReplaySubject
 import timber.log.Timber
 
-class MainActivity : AppCompatActivity() {
+class MainActivityOld : AppCompatActivity() {
 
     private var connectSubscription: Subscription? = null
 
@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_main_old)
         progress.visibility = View.VISIBLE
         progress.isIndeterminate = true
         connectWordClock()
@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
                     .observeConnectDevice(device, Config.MY_UUID_SECURE)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
-                    .doOnError { Toast.makeText(this@MainActivity, "Connecting failed. Will Retry.", Toast.LENGTH_SHORT).show() }
+                    .doOnError { Toast.makeText(this@MainActivityOld, "Connecting failed. Will Retry.", Toast.LENGTH_SHORT).show() }
                     .retry(3)
                     .map { bluetoothSocket -> BtCommander(bluetoothSocket) }
                     .subscribe({ commander ->
@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun pickPrimaryColor() {
         ColorPickerDialogBuilder
-                .with(this@MainActivity)
+                .with(this@MainActivityOld)
                 .setTitle("Choose color")
                 .initialColor(primaryColor)
                 .showAlphaSlider(false)
@@ -169,7 +169,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun pickSecondaryColor() {
         ColorPickerDialogBuilder
-                .with(this@MainActivity)
+                .with(this@MainActivityOld)
                 .setTitle("Secondary Color")
                 .initialColor(backgroundColor)
                 .showAlphaSlider(false)
