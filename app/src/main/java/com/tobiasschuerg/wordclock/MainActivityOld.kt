@@ -15,6 +15,7 @@ import com.tobiasschuerg.wordclock.values.ClockValue
 import com.tobiasschuerg.wordclock.values.Effect
 import com.tobiasschuerg.wordclock.values.ForegroundColor
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main_old.*
 import rx.Subscriber
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
