@@ -4,10 +4,9 @@ import android.bluetooth.BluetoothDevice
 import android.graphics.Color
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import com.github.ivbaranov.rxbluetooth.RxBluetooth
@@ -21,6 +20,7 @@ import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import rx.subjects.ReplaySubject
+import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
 
@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun log(message: String) {
-        Log.d("Main", message)
+        Timber.d(message)
     }
 
     private fun setMessage(message: String) {
