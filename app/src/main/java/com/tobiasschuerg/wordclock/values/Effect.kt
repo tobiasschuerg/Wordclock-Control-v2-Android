@@ -4,9 +4,9 @@ package com.tobiasschuerg.wordclock.values
  * Created by Tobias Schürg on 27.11.2016.
  */
 
-class Effect(
-        private val effect: Int,
-        private val esIstEnabled: Boolean
+data class Effect(
+        val effect: Int,
+        val esIstEnabled: Boolean
 ) : ClockValue {
 
     override fun toByte(): ByteArray {

@@ -7,22 +7,25 @@
 
     <fragment
         android:id="@+id/FirstFragment"
-        android:name="com.tobiasschuerg.wordclock.ui.FirstFragment"
+        android:name="com.tobiasschuerg.wordclock.ui.ConnectFragment"
         android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first">
+        tools:layout="@layout/fragment_connect">
 
         <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
+            android:id="@+id/connect_fragment_to_configure_fragment"
             app:destination="@id/SecondFragment" />
     </fragment>
     <fragment
         android:id="@+id/SecondFragment"
         android:name="com.tobiasschuerg.wordclock.ui.SecondFragment"
         android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
+        tools:layout="@layout/activity_main_old">
 
         <action
             android:id="@+id/action_SecondFragment_to_FirstFragment"
             app:destination="@id/FirstFragment" />
+        <argument
+            android:name="device"
+            app:argType="android.bluetooth.BluetoothDevice" />
     </fragment>
 </navigation>

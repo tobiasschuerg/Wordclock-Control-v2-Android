@@ -7,6 +7,7 @@ import android.util.Log
 import com.github.ivbaranov.rxbluetooth.BluetoothConnection
 import com.tobiasschuerg.wordclock.values.ClockValue
 import rx.Subscription
+import timber.log.Timber
 import java.io.IOException
 import java.util.*
 
@@ -14,27 +15,7 @@ import java.util.*
  * Created by Tobias Schürg on 27.11.2016.
  */
 
-class BtCommander(private val socket: BluetoothSocket)
-
-//        subscription = connection.observeByteStream()
-//                .subscribe(new Subscriber<Byte>() {
-//                    @Override
-//                    public void onCompleted() {
-//                        Log.d("Bt", "completed");
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable e) {
-//                        Log.d("Bt", "error");
-//                        e.printStackTrace();
-//                    }
-//
-//                    @Override
-//                    public void onNext(Byte aByte) {
-//                        Log.d("Bt", "byte: " + aByte);
-//                    }
-//                });
-{
+class BtCommander(private val socket: BluetoothSocket) {
 
     private var connection: BluetoothConnection? = null
     private val subscription: Subscription? = null
@@ -59,14 +40,14 @@ class BtCommander(private val socket: BluetoothSocket)
                 try {
                     socket.connect()
                 } catch (e: IOException) {
-                    e.printStackTrace()
+                    Timber.e(e)
                 }
 
             }
             try {
                 connection = BluetoothConnection(socket)
             } catch (e: Exception) {
-                e.printStackTrace()
+                Timber.e(e)
             }
 
         }
